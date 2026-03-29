@@ -47,7 +47,12 @@ const tools = [
 ]
 
 export default async function HomePage() {
-  const session = await auth()
+  let session = null
+  try {
+    session = await auth()
+  } catch {
+    // auth initialization may fail if env vars are not yet available
+  }
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">

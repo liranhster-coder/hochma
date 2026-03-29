@@ -3,7 +3,12 @@ import { redirect } from 'next/navigation'
 import { HardHat } from 'lucide-react'
 
 export default async function LoginPage() {
-  const session = await auth()
+  let session = null
+  try {
+    session = await auth()
+  } catch {
+    // auth initialization may fail if env vars are not yet available
+  }
   if (session?.user) {
     redirect('/reports')
   }
