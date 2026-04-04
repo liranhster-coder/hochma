@@ -27,6 +27,19 @@ interface ReportData {
   }>
 }
 
+/** Strip markdown formatting characters from a string */
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/^#{1,6}\s+/gm, '')          // ## headings
+    .replace(/\*\*(.+?)\*\*/g, '$1')      // **bold**
+    .replace(/\*(.+?)\*/g, '$1')          // *italic*
+    .replace(/_{2}(.+?)_{2}/g, '$1')      // __bold__
+    .replace(/_(.+?)_/g, '$1')            // _italic_
+    .replace(/^[-*]{3,}\s*$/gm, '')       // --- horizontal rules
+    .replace(/`{1,3}(.+?)`{1,3}/g, '$1') // `code`
+    .trim()
+}
+
 export async function analyzePhoto(
   photoData: Buffer,
   mimeType: string
@@ -41,7 +54,7 @@ export async function analyzePhoto(
         content: [
           {
             type: 'text',
-            text: 'אתה מהנדס פיקוח בניה מנוסה. תאר בעברית מה רואים בתמונה זו. ציין: 1) מה מצולם (שלב הבניה, האלמנט) 2) האם יש ליקויים, בעיות או הערות 3) רמת חומרה אם יש בעיה (גבוה/בינוני/נמוך). היה קצר ומקצועי.',
+            text: 'אתה מהנדס פיקוח בניה מנוסה. תאר בעברית מה רואים בתמונה זו. ציין: 1) מה מצולם (שלב הבניה, האלמנט) 2) האם יש ליקויים, בעיות או הערות 3) רמת חומרה אם יש בעיה (גבוה/בינוני/נמוך). היה קצר ומקצועי. כתוב טקסט רגיל ללא סימני מארקדאון.',
           },
           {
             type: 'image_url',
@@ -84,14 +97,20 @@ export async function generateReportContent(
 ממצאים מהתמונות (${photoAnalyses.length} תמונות):
 ${photoAnalyses.map((a, i) => `תמונה ${i + 1}: ${a}`).join('\n')}
 
-כתוב דוח מקצועי הכולל:
-1. סיכום הביקור (פסקה קצרה)
-2. ממצאי הביקור (מפורט לפי אזורים/שלבים)
-3. ליקויים ודרישות לתיקון (ממוספרים, עם רמת עדיפות)
-4. הנחיות לקבלן
-5. המלצות והערות נוספות
+כתוב דוח מקצועי הכולל את הסעיפים הבאים בדיוק (כל סעיף מתחיל בכותרת עם נקודותיים):
+1. סיכום הביקור:
+2. ממצאי הביקור:
+3. ליקויים ודרישות לתיקון:
+4. הנחיות לקבלן:
+5. המלצות והערות נוספות:
 
-השתמש בשפה מקצועית ופורמלית. הפרד בין סעיפים בבירור.`
+הוראות עיצוב חשובות:
+- כתוב טקסט רגיל בלבד — ללא סימני מארקדאון
+- אין להשתמש בכוכביות (* או **), חשמונאים (#), מקפים כקווים (---), או כל תו עיצוב אחר
+- כותרות סעיפים: רשום את שם הסעיף ואחריו נקודותיים, בשורה נפרדת (לדוגמה: "ממצאי הביקור:")
+- פריטים ממוספרים: השתמש במספרים רגילים עם נקודה (1. 2. 3.)
+- הפרד בין פסקאות בשורה ריקה אחת
+- שפה מקצועית ופורמלית`
 
   const openai = getOpenAIClient()
   const response = await openai.chat.completions.create({
@@ -163,23 +182,53 @@ export async function createWordDocument(
     })
   )
 
-  // Report content
-  const contentLines = reportContent.split('\n')
+  // Report content — strip any markdown that leaked through, then render
+  const cleanedContent = reportContent
+    .split('\n')
+    .map((line) => stripMarkdown(line))
+    .join('\n')
+
+  const contentLines = cleanedContent.split('\n')
   for (const line of contentLines) {
     const trimmed = line.trim()
     if (!trimmed) {
-      sections.push(new Paragraph({ text: '' }))
+      sections.push(new Paragraph({ text: '', spacing: { after: 60 } }))
       continue
     }
-    const isHeader = /^[0-9]+\./.test(trimmed) || trimmed.endsWith(':')
-    sections.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: trimmed, bold: isHeader, size: isHeader ? 24 : 22 }),
-        ],
-        spacing: { after: 80 },
-      })
-    )
+
+    // Section headings: "1. כותרת:" or short standalone "כותרת:"
+    const isSectionHeading =
+      /^[0-9]+\.\s+.+:$/.test(trimmed) ||
+      (/^[^0-9].+:$/.test(trimmed) && trimmed.length < 50)
+
+    // Indented numbered items: "1. " at start
+    const isNumberedItem = /^[0-9]+\.\s+/.test(trimmed)
+
+    if (isSectionHeading) {
+      sections.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: trimmed, bold: true, size: 26, color: '1F3864' }),
+          ],
+          spacing: { before: 300, after: 100 },
+        })
+      )
+    } else if (isNumberedItem) {
+      sections.push(
+        new Paragraph({
+          children: [new TextRun({ text: trimmed, size: 22 })],
+          spacing: { after: 80 },
+          indent: { right: 300 },
+        })
+      )
+    } else {
+      sections.push(
+        new Paragraph({
+          children: [new TextRun({ text: trimmed, size: 22 })],
+          spacing: { after: 80 },
+        })
+      )
+    }
   }
 
   // Photos section
@@ -197,15 +246,14 @@ export async function createWordDocument(
     for (let i = 0; i < data.photos.length; i++) {
       const photo = data.photos[i]
       try {
-        // Map mimeType to docx ImageRun type
         const mimeToType: Record<string, 'jpg' | 'png' | 'gif' | 'bmp'> = {
           'image/jpeg': 'jpg',
           'image/jpg': 'jpg',
           'image/png': 'png',
           'image/gif': 'gif',
           'image/bmp': 'bmp',
-          'image/svg+xml': 'png', // fallback for svg
-          'image/webp': 'jpg',   // docx doesn't support webp, fallback
+          'image/svg+xml': 'png',
+          'image/webp': 'jpg',
         }
         const imgType = mimeToType[photo.mimeType || 'image/jpeg'] || 'jpg'
         sections.push(

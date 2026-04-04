@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { GenerateReportButton } from './generate-button'
 import { VisitActions } from './visit-actions'
+import { ReportContent } from '@/components/report-content'
 
 const visitTypeLabel: Record<string, string> = {
   regular: 'ביקור שגרתי',
@@ -182,7 +183,7 @@ export default async function VisitPage({
         {/* Report section */}
         {visit.report ? (
           <Card className="border-green-500/30 bg-green-500/5">
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -203,15 +204,19 @@ export default async function VisitPage({
               </div>
 
               {visit.report.content && (
-                <details className="mt-4">
-                  <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+                <details>
+                  <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
                     הצג תוכן הדוח
                   </summary>
-                  <div className="mt-3 text-sm whitespace-pre-wrap leading-relaxed border-t border-border pt-3 max-h-96 overflow-y-auto">
-                    {visit.report.content}
+                  <div className="mt-3 border-t border-border pt-3 max-h-96 overflow-y-auto">
+                    <ReportContent content={visit.report.content} />
                   </div>
                 </details>
               )}
+
+              <div className="border-t border-border/50 pt-3">
+                <GenerateReportButton visitId={visit.id} regenerate />
+              </div>
             </CardContent>
           </Card>
         ) : (
