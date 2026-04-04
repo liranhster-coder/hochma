@@ -1,5 +1,7 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 interface ReportContentProps {
   content: string
   className?: string
@@ -21,7 +23,7 @@ function cleanLine(line: string): string {
 export function ReportContent({ content, className = '' }: ReportContentProps) {
   const lines = content.split('\n')
 
-  const elements: React.ReactNode[] = []
+  const elements: ReactNode[] = []
   let key = 0
 
   for (let i = 0; i < lines.length; i++) {
