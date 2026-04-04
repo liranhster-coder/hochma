@@ -52,6 +52,7 @@ export async function POST(
       caption: p.caption || undefined,
       aiAnalysis: analyses[i],
       orderIndex: p.orderIndex,
+      mimeType: p.mimeType,
     })),
   }
 

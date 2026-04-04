@@ -24,13 +24,17 @@ export async function PATCH(
 ) {
   const { id } = await params
   const body = await req.json()
-  const { typedNotes, status } = body
+  const { typedNotes, status, engineerName, visitDate, visitType, attendees } = body
 
   const visit = await prisma.siteVisit.update({
     where: { id },
     data: {
       ...(typedNotes !== undefined && { typedNotes }),
       ...(status !== undefined && { status }),
+      ...(engineerName !== undefined && { engineerName }),
+      ...(visitDate !== undefined && { visitDate: new Date(visitDate) }),
+      ...(visitType !== undefined && { visitType }),
+      ...(attendees !== undefined && { attendees }),
     },
   })
   return NextResponse.json(visit)
@@ -41,6 +45,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  // Delete report first (no cascade defined in schema for SiteReport)
+  await prisma.siteReport.deleteMany({ where: { visitId: id } })
+  // Photos cascade from SiteVisit, but delete explicitly to be safe
+  await prisma.visitPhoto.deleteMany({ where: { visitId: id } })
   await prisma.siteVisit.delete({ where: { id } })
   return NextResponse.json({ ok: true })
 }

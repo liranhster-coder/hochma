@@ -23,6 +23,7 @@ interface ReportData {
     caption?: string
     aiAnalysis?: string
     orderIndex: number
+    mimeType?: string
   }>
 }
 
@@ -196,13 +197,24 @@ export async function createWordDocument(
     for (let i = 0; i < data.photos.length; i++) {
       const photo = data.photos[i]
       try {
+        // Map mimeType to docx ImageRun type
+        const mimeToType: Record<string, 'jpg' | 'png' | 'gif' | 'bmp'> = {
+          'image/jpeg': 'jpg',
+          'image/jpg': 'jpg',
+          'image/png': 'png',
+          'image/gif': 'gif',
+          'image/bmp': 'bmp',
+          'image/svg+xml': 'png', // fallback for svg
+          'image/webp': 'jpg',   // docx doesn't support webp, fallback
+        }
+        const imgType = mimeToType[photo.mimeType || 'image/jpeg'] || 'jpg'
         sections.push(
           new Paragraph({
             children: [
               new ImageRun({
                 data: photo.data,
                 transformation: { width: 400, height: 300 },
-                type: 'jpg',
+                type: imgType,
               }),
             ],
             spacing: { before: 200 },
