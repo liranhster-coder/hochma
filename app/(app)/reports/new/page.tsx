@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Camera, ChevronLeft, ChevronRight, X, Check, Loader2, FileText } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -25,8 +25,9 @@ const visitTypes = [
   { value: 'inspection', label: 'ביקור בדיקה' },
 ]
 
-export default function NewReportPage() {
+function NewReportForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [step, setStep] = useState(1)
@@ -38,7 +39,7 @@ export default function NewReportPage() {
   const [generating, setGenerating] = useState(false)
 
   // Step 1
-  const [projectId, setProjectId] = useState('')
+  const [projectId, setProjectId] = useState(searchParams.get('projectId') || '')
   const [engineerName, setEngineerName] = useState('')
   const [visitDate, setVisitDate] = useState(new Date().toISOString().split('T')[0])
   const [visitType, setVisitType] = useState('regular')
@@ -456,5 +457,13 @@ export default function NewReportPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function NewReportPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+      <NewReportForm />
+    </Suspense>
   )
 }

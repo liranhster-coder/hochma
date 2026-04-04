@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { signIn, signOut } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { HardHat, FileText, Building2, Users, DollarSign, Wrench, LogIn, LogOut, ChevronLeft } from 'lucide-react'
 
@@ -54,6 +55,11 @@ export default async function HomePage() {
     // auth initialization may fail if env vars are not yet available
   }
 
+  // Redirect authenticated users to the app dashboard
+  if (session?.user) {
+    redirect('/dashboard')
+  }
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Header */}
@@ -85,7 +91,7 @@ export default async function HomePage() {
             <form
               action={async () => {
                 'use server'
-                await signIn('google', { redirectTo: '/reports' })
+                await signIn('google', { redirectTo: '/dashboard' })
               }}
             >
               <button

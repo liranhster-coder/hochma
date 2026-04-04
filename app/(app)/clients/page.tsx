@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
-import { Users, Phone, Mail, Building2 } from 'lucide-react'
+import { Users, Phone, Mail, Building2, ChevronLeft } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import Link from 'next/link'
 import { NewClientDialog } from './new-client-dialog'
 
 export default async function ClientsPage() {
@@ -34,9 +35,10 @@ export default async function ClientsPage() {
       ) : (
         <div className="space-y-2">
           {clients.map((client) => (
-            <div
+            <Link
               key={client.id}
-              className="bg-card border border-border rounded-2xl p-4"
+              href={`/clients/${client.id}`}
+              className="block bg-card border border-border rounded-2xl p-4 hover:border-primary/30 hover:shadow-sm transition-all active:scale-[0.99]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -49,32 +51,28 @@ export default async function ClientsPage() {
                   )}
                   <div className="flex flex-wrap gap-3 mt-2">
                     {client.phone && (
-                      <a
-                        href={`tel:${client.phone}`}
-                        className="flex items-center gap-1 text-sm text-primary hover:underline"
+                      <span
+                        className="flex items-center gap-1 text-sm text-muted-foreground"
+                        onClick={(e) => { e.preventDefault(); window.location.href = `tel:${client.phone}` }}
                       >
                         <Phone className="h-3.5 w-3.5" />
                         {client.phone}
-                      </a>
+                      </span>
                     )}
                     {client.email && (
-                      <a
-                        href={`mailto:${client.email}`}
-                        className="flex items-center gap-1 text-sm text-primary hover:underline"
-                      >
+                      <span className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Mail className="h-3.5 w-3.5" />
                         {client.email}
-                      </a>
+                      </span>
                     )}
                   </div>
-                  {client._count.projects > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1.5">
-                      {client._count.projects} פרויקטים
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {client._count.projects} פרויקטים
+                  </p>
                 </div>
+                <ChevronLeft className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

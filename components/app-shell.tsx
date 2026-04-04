@@ -23,7 +23,7 @@ interface User {
 }
 
 const navItems = [
-  { href: '/', icon: Home, label: 'בית' },
+  { href: '/dashboard', icon: Home, label: 'בית' },
   { href: '/reports', icon: FileText, label: 'דוחות' },
   { href: '/projects', icon: Building2, label: 'פרויקטים' },
   { href: '/clients', icon: Users, label: 'לקוחות' },
@@ -44,7 +44,7 @@ export function AppShell({
       {/* Top bar */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/50">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <HardHat className="h-4 w-4 text-primary-foreground" />
             </div>
@@ -65,7 +65,7 @@ export function AppShell({
             <div className="max-w-2xl mx-auto px-4 py-3 space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon
-                const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
                 return (
                   <Link
                     key={item.href}
@@ -111,7 +111,7 @@ export function AppShell({
         <div className="max-w-2xl mx-auto px-2 flex justify-around py-1">
           {navItems.map((item) => {
             const Icon = item.icon
-            const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+            const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (
               <Link
                 key={item.href}

@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, MapPin, User, Phone, Plus, FileText, Clock } from 'lucide-react'
+import { ArrowRight, MapPin, User, Phone, Plus, FileText, Clock, Pencil } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -49,9 +49,17 @@ export default async function ProjectPage({
             <h1 className="font-bold truncate">{project.name}</h1>
             <p className="text-xs text-muted-foreground">{project.client.name}</p>
           </div>
-          <Badge variant={project.status === 'active' ? 'success' : 'secondary'}>
-            {project.status === 'active' ? 'פעיל' : 'הסתיים'}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={project.status === 'active' ? 'success' : 'secondary'}>
+              {project.status === 'active' ? 'פעיל' : 'הסתיים'}
+            </Badge>
+            <Link
+              href={`/projects/${project.id}/edit`}
+              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Pencil className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          </div>
         </div>
       </div>
 
