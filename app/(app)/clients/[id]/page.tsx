@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
   ArrowRight,
-  Building2,
   Mail,
   Phone,
   Pencil,
